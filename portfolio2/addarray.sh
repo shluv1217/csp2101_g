@@ -1,17 +1,15 @@
+
 #!/bin/bash
 #Name : Sunghoon Shin (David)
 #Student Number : 10529950
-
-getprop(){ # declare fucntion named getprop
-    wordcount=`wc --word < $1` # set word count of the input file $1 into the variable wordcount
-    filesize=$(wc -c $1 | awk '{print $1}') #calculate the file size as default(bytes) and save the value as the variable filesize
-    kbsize=$(bc <<<"scale=3; $filesize / 1024") #convert bytes file size to Kbytes file size and save the value as the variable kbsize
-    date=$(date -r $1 +"%d-%m-%Y %H:%M:%S") # set last modified date of the input file $1 into the variable date
-    echo "The file $1 contains $wordcount words and is $kbsize K in size and was last modified $date" # print wordcount, filesize, last modified date
-}
-
-read -p "Plase enter the filename: " filename # prompt the user for the file name
-getprop $filename # invoke the function named getprop, and set input argument as $filename
+declare -a ass1 # declare an array named ass1 to hold assignment1 scores
+declare -a ass2 # declare an array named ass2 to hold assignment2 scores
+ass1=(12 18 20 10 12 16 15 19 8 11) # set assignment1 scores into ass1 array
+ass2=(22 29 30 20 18 24 25 26 29 30) # set assignment2 scores into ass2 array
+len=${#ass1[*]} # get the total of elements in the ass1 array for calculation loop
+let sum=0 # initialize a variable to hold sum of assignment1 score and assignment2 score
+for (( i=0; i<${len}; i++)); do # set counter to 1, set end condition to lengh of array, increment by 1
+    sum=$((${ass1[$i]} + ${ass2[$i]})) # assign sum calculation of values in ass1 array and ass2 array to the variable sum
+    echo -e "Student_$(($i+1)) Result:\t$sum" # echo the each caculated sum
+done
 exit 0 # exit program
-
-
