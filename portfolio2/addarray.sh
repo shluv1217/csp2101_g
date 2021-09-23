@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #Name : Sunghoon Shin (David)
 #Student Number : 10529950
