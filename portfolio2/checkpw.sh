@@ -4,22 +4,22 @@
 
 inputfile=usrpwords.txt # set a variable named inpufile to usrpwords.txt
 
-cat $inputfile | awk 'BEGIN {FS="\t"} 
-NR>1{
-        
-        if ((length($2))-1 >= 8) 
-            {
-                if($2 !~ /[[:upper:]]/ || $2 !~ /[[:digit:]]/){
-                    print $1 "- does no meet password strength requirements " 
-                }else{
-                    print $1 "- meets password strength requirements" 
+awk 'BEGIN {FS="\t"} 
+    NR>1{
+            if ((length($2))-1 >= 8) 
+                {
+                    if($2 !~ /[[:upper:]]/ || $2 !~ /[[:digit:]]/){
+                        print "does NOT meet password strength requirements - " $2
+                    }else{
+                        print "meet password strength requirements\t- " $2
+                    }
                 }
-            }
-        else
+            else
             {
-                print $1 "- does no meet password strength requirements" 
-            }        
-    }'
+                print "does NOT meet password strength requirements\t- " $2
+            }  
+    }
+' $inputfile
 #By using piping
 #1. Capture contents of inputfile
 #2. Split each line by "\t"(tab)
