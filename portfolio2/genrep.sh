@@ -10,7 +10,7 @@ NR>0{totalsum=$1+$2+$3+$4; printf ""$1"\t\t%.0f \n", totalsum;}'
 #1. Capture contents of inputfile
 #2. Grep lines which contain the words namely DDOS, MALWARE, XSS, SQL - INJ, MitM
 #3. Replace tags in html to " "(space)
-#4. Split each line by " "(space) and print header. Subsequently, calculate sum of each field except for filed 0 
-#   and, print the field 0 and the sum
+#4. Split each line by " "(space) and print header. Subsequently, calculate sum of each field except for line 0 
+#   and, print the line 0 and the caculated sum
 
 exit 0 # exit program
