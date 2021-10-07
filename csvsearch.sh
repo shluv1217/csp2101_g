@@ -17,7 +17,7 @@ checkinputfield(){
     echo "7)BYTES"  
     echo "------------------------------------------------"
     local fieldoption=0
-    read -p ">> Please enter the column you want to search for : " field
+    read -p ">> Please enter the field you want to search for : " field
     case $field in 
       1) fieldoption=1
          break ;;
@@ -90,8 +90,8 @@ singfilelesearchlog(){ #single file search function
       7) value=$BYTES;; # set value of bytes field in case of 1 (BYTES)
   esac
 
-  logvalue="$(echo -e "${value}" | tr -d '[:space:]')"
-  keywordvalue="$(echo -e "$3" | tr -d '[:space:]')"
+  logvalue="$(echo -e "${value}" | tr -d '[:space:]' | tr [:lower:] [:upper:])"
+  keywordvalue="$(echo -e "$3" | tr -d '[:space:]' | tr [:lower:] [:upper:])"
   class="$(echo -e "$CLASS" | tr -d '[:space:]')"
 
 
@@ -307,6 +307,7 @@ while true; do
       if [ "$calculationyn" = "Y" ]; then
         packetbytecal $outputfilename #Invoke the packetbytecal function
       fi 
+      echo "$(<$outputfilename)" #Print all the contents of outputfile
     fi
 
   #Basic search option 
@@ -350,13 +351,13 @@ while true; do
   fi # Gerneral/Advance Option Closing
 
 
-  rm $tmpfilename # Delete temporal file after search job is finished
+  rm $tmpfilename # Delete the used temporal file after search job is finished
   echo ">> Search finished, please check the result in $outputfilename!!"
   echo ""
 
 
-  echo "---------------- Resume Option ----------------"
-  echo "If you want to exit search proccess, press 'n' "
+  echo "---------------- Search Resume Option ----------------"
+  echo "If you want to exit search process, press 'n' "
   echo ", otherwise searching will be resuming"
   echo "------------------------------------------------"
   read -p ">> Do you want to continue searching (y/n)? : " continueYN
@@ -373,22 +374,3 @@ while true; do
 done 
 
 exit 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
