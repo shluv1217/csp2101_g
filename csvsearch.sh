@@ -33,8 +33,6 @@ checkinputfield(){
         break ;;
       7) fieldoption=7
         break ;;
-      8) fieldoption=8
-        break ;;
       *) echo -e "![Error] Choose option among above selection\n";;
     esac           
   done 
@@ -71,10 +69,21 @@ checkrangeoption(){
   return $rangeoption
 }
 
+inputfilelist(){
+    echo ""
+    echo ""
+    echo "---------------- [Log File List] ----------------"
+    for entry in "$searchdir"/*
+    do
+      echo "$entry"
+    done
+    echo "-------------------------------------------------"
+}
 
-singfilelesearchlog(){ #single file search function
+
+searchlogfile(){ #single file search function
   
-  echo "Params : $1,$2,$3,$4,$5,$6,$7,$8,$9"
+  #echo "Params : $1,$2,$3,$4,$5,$6,$7,$8,$9"
 
   OLDIFS=$IFS
   IFS=','
@@ -142,21 +151,37 @@ singfilelesearchlog(){ #single file search function
 }
 
 
-inputfilelist(){
-    echo ""
-    echo ""
-    echo "---------------- [Log File List] ----------------"
-    for entry in "$searchdir"/*
-    do
-      echo "$entry"
-    done
-    echo "--------------------------------------------"
-}
+outputfileformatting(){
+
+  #echo "outputfileformatting param : $1, $2, $3"
 
 
-packetbytecal(){
-  awk -F "," '{PacketTotal=PacketTotal+$8} END{print "PacketTotal : " PacketTotal}' $1 >> $1
-  awk -F "," '{BytesTotal=BytesTotal+$9} END{print "BytesTotal : " BytesTotal}' $1 >> $1
+  if [ "$3" = "Y"  ]; then
+    awk 'BEGIN {FS=","; packettotal=0; bytestotal=0} 
+          NR>0{
+            { 
+              printf "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s \n", $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13;
+              packettotal=packettotal+$8;
+              bytestotal=bytestotal+$9;
+
+            }
+          }
+          END {
+            print "Packet Total : "packettotal;
+            print "Bytes Total : "bytestotal;
+          }
+        ' $1 > $2
+  else 
+    awk 'BEGIN {FS=",";} 
+            NR>0{
+              { 
+                printf "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s \n", $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13;
+              }
+            }
+        ' $1 > $2
+  fi
+
+  
 }
 
 
@@ -173,6 +198,7 @@ while true; do
   singlefileyn="Y"
   advanceyn=""
   searchdir="./serv_acc/" # set log location directory "./serv_acc" to the variable searchdir
+  tmpoutputfilename="tempoutput.csv"
   tmpfilename="temp.csv"
 
   echo "---------------- [Begin Search Process] ----------------"
@@ -180,9 +206,9 @@ while true; do
   echo ""
   #Check whether the file selected by user exists and save the output file name as outputfilename
   while true; do
-    echo "---------------- [Outputfile] ----------------"
+    echo "---------------- [Outputfile] --------------------------------"
     echo " You need to choose unique file name in the current directory"
-    echo "----------------------------------------------------"
+    echo "--------------------------------------------------------------"
     read -p ">> Please enter the outputfile name you want to save the result : " outputfilename 
     #outputfilenameyn="Y"
     if [ -f "$outputfilename" ]; then 
@@ -198,7 +224,7 @@ while true; do
     echo ""
     echo "---------------- [Search Options] ----------------"
     echo "1) Basic Search 2) Advance Search "
-    echo "------------------------------------------------"
+    echo "--------------------------------------------------"
     read -p ">> Please enter the search option : " searchoption
     echo -e "\n"
     case $searchoption in 
@@ -217,7 +243,7 @@ while true; do
     while true; do
       echo "---------------- [Advance Search Options] ----------------"
       echo "1) Single File 2) All Files "
-      echo "------------------------------------------------"
+      echo "----------------------------------------------------------"
       read -p ">> Please enter the advance search option : " advanceoption
       case $advanceoption in 
       1) fileoption="single" 
@@ -258,10 +284,9 @@ while true; do
         read -p ">> Please enter the keyword you want to search for : " keyword
 
         if  [ $searchorder = 1  ]; then
-          echo "---------------- [Processing.....] ----------------"
-          singfilelesearchlog $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn       
+          searchlogfile $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $tmpoutputfilename $searchorder $singlefileyn       
         else 
-          singfilelesearchlog $fieldoption $outputfilename $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn
+          searchlogfile $fieldoption $tmpoutputfilename $keyword $rangeoption $tmpfilename $advanceyn $tmpoutputfilename $searchorder $singlefileyn
         fi
 
 
@@ -276,10 +301,12 @@ while true; do
             break
         fi
       done 
-      
-      if [ "$calculationyn" = "Y" ]; then
-        packetbytecal $outputfilename #Invoke the packetbytecal function
-      fi 
+
+      echo "---------------- [Processing.....] ----------------"
+
+      #Outputfile formatting and calculation in case of packet and bytes field
+      outputfileformatting $tmpoutputfilename $outputfilename $calculationyn
+
       echo "$(<$outputfilename)" #Print all the contents of outputfile
     
     #Advance option for All Files
@@ -302,11 +329,12 @@ while true; do
       for inputfile in ./serv_acc/*
       do
         searchorder=$((searchorder+1))
-        singfilelesearchlog $fieldoption $inputfile $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn
+        searchlogfile $fieldoption $inputfile $keyword $rangeoption $tmpfilename $advanceyn $tmpoutputfilename $searchorder $singlefileyn
       done
-      if [ "$calculationyn" = "Y" ]; then
-        packetbytecal $outputfilename #Invoke the packetbytecal function
-      fi 
+
+      #Outputfile formatting and calculation in case of packet and bytes field
+      outputfileformatting $tmpoutputfilename $outputfilename $calculationyn
+
       echo "$(<$outputfilename)" #Print all the contents of outputfile
     fi
 
@@ -315,9 +343,9 @@ while true; do
     advanceyn="N" # Set the variable advanceyn to "N" (Basic Search Option)
     singfileyn="N" # Set the variable singfileyn to "N" 
     inputfilelist # Invoke the function inputfilelist for listing up file list that user can choose for searching 
+
     while true; do
       read -p ">> Please enter the filename you want to search for : " inputfile
-      #outputfilenameyn="Y"
       if ! [ -f ./serv_acc/"$inputfile"  ]; then 
         echo -e "![Error] The file doesn't exist, please enter a correct file name\n"
         inputfilelist
@@ -326,6 +354,7 @@ while true; do
         break
       fi
     done  
+    
     checkinputfield # Invoke checkinputfield function to get the column for search from user
     fieldoption=$? # Save the chosen column as the variable fieldoption
     if [ $fieldoption = 6 -o  $fieldoption = 7 ]; then
@@ -338,28 +367,33 @@ while true; do
     paramInputfile="./serv_acc/$inputfile"
     searchorder=1
 
-    #Invoke the singfilelesearchlog for searching log with input parameters
+    #Invoke the searchlogfile for searching log with input parameters
     # 1.Field, 2.Inputfile, 3.Keyword, 4.Rangeoption, 5.Outputfile, 6.AdvancedYN, 7.Tempfilename, 8.Order of Chosen Fileds(Adavnce)
     echo ""
     echo ""
     echo "---------------- [Processing.....] ----------------"
-    singfilelesearchlog $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn
-    if [ "$calculationyn" = "Y" ]; then #If the column is packet or bytes, calculate the total number of each column and save and print it
-        packetbytecal $outputfilename #Invoke the packetbytecal function
-    fi 
+    searchlogfile $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $tmpoutputfilename $searchorder $singlefileyn
+
+    #Outputfile formatting and calculation in case of packet and bytes field
+    outputfileformatting $tmpoutputfilename $outputfilename $calculationyn
+  
+
     echo "$(<$outputfilename)" #Print all the contents of outputfile 
   fi # Gerneral/Advance Option Closing
 
 
   rm $tmpfilename # Delete the used temporal file after search job is finished
+  rm $tmpoutputfilename # Delete the used temporal file after search job is finished
+  echo ""
+  echo ""
   echo ">> Search finished, please check the result in $outputfilename!!"
   echo ""
 
 
   echo "---------------- Search Resume Option ----------------"
-  echo "If you want to exit search process, press 'n' "
-  echo ", otherwise searching will be resuming"
-  echo "------------------------------------------------"
+  echo "If you want to exit the search process, press 'n'     "
+  echo ",otherwise searching will be resuming"
+  echo "------------------------------------------------------"
   read -p ">> Do you want to continue searching (y/n)? : " continueYN
   echo ""
   echo ""
