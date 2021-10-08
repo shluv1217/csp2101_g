@@ -2,6 +2,11 @@
 #Name : Sunghoon Shin (David)
 #Student Number : 10529950
 
+declare -a filelist # declare an array named ass1 to hold assignment1 scores
+# set assignment1 scores into ass1 array
+filelist=("serv_acc_log_03042020.csv" "serv_acc_log_12032020.csv" "serv_acc_log_14032020.csv" "serv_acc_log_17032020.csv" "serv_acc_log_21032020.csv") 
+
+
 checkinputfield(){
 
   while true; do 
@@ -70,14 +75,34 @@ checkrangeoption(){
 }
 
 inputfilelist(){
-    echo ""
-    echo ""
-    echo "---------------- [Log File List] ----------------"
-    for entry in "$searchdir"/*
-    do
-      echo "$entry"
-    done
-    echo "-------------------------------------------------"
+
+    while true; do 
+      echo ""
+      echo ""
+      echo "---------------- [Log File List] ----------------"
+      len=${#filelist[*]} # get the total of elements in the ass1 array for calculation loop
+      for (( i=0; i<${len}; i++)); do # set counter to 1, set end condition to lengh of array, increment by 1
+        echo -e "$(($i+1))) ${filelist[$i]}" # echo the each caculated sum
+      done
+      echo "-------------------------------------------------"
+      local filenumber=0
+      read -p ">> Please enter the field you want to search for : " filenumber
+      case $filenumber in 
+        1) filenumber=0
+          break ;;
+        2) filenumber=1
+          break ;;
+        3) filenumber=2
+          break ;;
+        4) filenumber=3
+          break ;;
+        5) filenumber=4
+          break ;;
+        *) echo -e "![Error] Choose file number among above selections\n";;
+      esac           
+    done 
+    return $filenumber
+
 }
 
 
@@ -156,7 +181,7 @@ outputfileformatting(){
   #echo "outputfileformatting param : $1, $2, $3"
 
 
-  if [ "$3" = "Y"  ]; then
+  if [ "$2" = "Y"  ]; then
     awk 'BEGIN {FS=","; packettotal=0; bytestotal=0} 
           NR>0{
             { 
@@ -170,7 +195,7 @@ outputfileformatting(){
             print "Packet Total : "packettotal;
             print "Bytes Total : "bytestotal;
           }
-        ' $1 > $2
+        ' $1 #> $2
   else 
     awk 'BEGIN {FS=",";} 
             NR>0{
@@ -178,7 +203,7 @@ outputfileformatting(){
                 printf "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s \n", $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13;
               }
             }
-        ' $1 > $2
+        ' $1 #> $2
   fi
 
   
@@ -190,6 +215,7 @@ outputfileformatting(){
 while true; do
   paramInputfile=""
   searchoption=""
+  inputfileoption=0
   fieldoption=0
   rangeoption=0
   searchorder=0
@@ -200,6 +226,7 @@ while true; do
   searchdir="./serv_acc/" # set log location directory "./serv_acc" to the variable searchdir
   tmpoutputfilename="tempoutput.csv"
   tmpfilename="temp.csv"
+  progressmsg='echo ---------------- [Processing.....] ----------------'
 
   echo "---------------- [Begin Search Process] ----------------"
   echo ""
@@ -259,17 +286,10 @@ while true; do
     if [ "$fileoption" = "single" ]; then 
 
       echo ">> You selected a single file option. You can set maximum three(3) fields for searching" 
-      inputfilelist #List up file list that user can choose for searching    
 
-      while true; do
-        read -p ">> Please enter the filename you want to search for : " inputfile
-        if ! [ -f ./serv_acc/"$inputfile"  ]; then 
-          echo -e "![Error] The file doesn't exist, please enter a correct file name\n"
-          continue
-        else
-          break
-        fi
-      done 
+      inputfilelist # Invoke the function inputfilelist for listing up file list that user can choose for searching
+      inputfileoption=$?
+      inputfile=${filelist[$inputfileoption]}
 
       while true; do
         checkinputfield
@@ -284,9 +304,9 @@ while true; do
         read -p ">> Please enter the keyword you want to search for : " keyword
 
         if  [ $searchorder = 1  ]; then
-          searchlogfile $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $tmpoutputfilename $searchorder $singlefileyn       
+          searchlogfile $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn       
         else 
-          searchlogfile $fieldoption $tmpoutputfilename $keyword $rangeoption $tmpfilename $advanceyn $tmpoutputfilename $searchorder $singlefileyn
+          searchlogfile $fieldoption $outputfilename $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn
         fi
 
 
@@ -305,9 +325,7 @@ while true; do
       echo "---------------- [Processing.....] ----------------"
 
       #Outputfile formatting and calculation in case of packet and bytes field
-      outputfileformatting $tmpoutputfilename $outputfilename $calculationyn
-
-      echo "$(<$outputfilename)" #Print all the contents of outputfile
+      outputfileformatting $outputfilename $calculationyn
     
     #Advance option for All Files
     else 
@@ -329,32 +347,25 @@ while true; do
       for inputfile in ./serv_acc/*
       do
         searchorder=$((searchorder+1))
-        searchlogfile $fieldoption $inputfile $keyword $rangeoption $tmpfilename $advanceyn $tmpoutputfilename $searchorder $singlefileyn
+        searchlogfile $fieldoption $inputfile $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn
       done
 
       #Outputfile formatting and calculation in case of packet and bytes field
-      outputfileformatting $tmpoutputfilename $outputfilename $calculationyn
+      outputfileformatting $outputfilename $calculationyn
 
-      echo "$(<$outputfilename)" #Print all the contents of outputfile
     fi
 
   #Basic search option 
   else 
     advanceyn="N" # Set the variable advanceyn to "N" (Basic Search Option)
     singfileyn="N" # Set the variable singfileyn to "N" 
-    inputfilelist # Invoke the function inputfilelist for listing up file list that user can choose for searching 
 
-    while true; do
-      read -p ">> Please enter the filename you want to search for : " inputfile
-      if ! [ -f ./serv_acc/"$inputfile"  ]; then 
-        echo -e "![Error] The file doesn't exist, please enter a correct file name\n"
-        inputfilelist
-        continue
-      else
-        break
-      fi
-    done  
-    
+    inputfilelist # Invoke the function inputfilelist for listing up file list that user can choose for searching
+    inputfileoption=$?
+    inputfile=${filelist[$inputfileoption]}
+
+    echo "chosen file name : $inputfile"
+
     checkinputfield # Invoke checkinputfield function to get the column for search from user
     fieldoption=$? # Save the chosen column as the variable fieldoption
     if [ $fieldoption = 6 -o  $fieldoption = 7 ]; then
@@ -371,19 +382,17 @@ while true; do
     # 1.Field, 2.Inputfile, 3.Keyword, 4.Rangeoption, 5.Outputfile, 6.AdvancedYN, 7.Tempfilename, 8.Order of Chosen Fileds(Adavnce)
     echo ""
     echo ""
-    echo "---------------- [Processing.....] ----------------"
-    searchlogfile $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $tmpoutputfilename $searchorder $singlefileyn
+    $progressmsg
+    searchlogfile $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn
 
     #Outputfile formatting and calculation in case of packet and bytes field
-    outputfileformatting $tmpoutputfilename $outputfilename $calculationyn
+    outputfileformatting $outputfilename $calculationyn
   
-
-    echo "$(<$outputfilename)" #Print all the contents of outputfile 
-  fi # Gerneral/Advance Option Closing
+  fi # Basic/Advance Option Closing
 
 
   rm $tmpfilename # Delete the used temporal file after search job is finished
-  rm $tmpoutputfilename # Delete the used temporal file after search job is finished
+  #rm $tmpoutputfilename # Delete the used temporal file after search job is finished
   echo ""
   echo ""
   echo ">> Search finished, please check the result in $outputfilename!!"
