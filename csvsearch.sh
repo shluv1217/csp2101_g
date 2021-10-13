@@ -33,7 +33,7 @@ checkinputfield(){
       2) fieldoption=2 # In case of the inputvalue 2(SRCIP), set value 2 to a variable named filedoption and break the while loop
          break ;;
       3) fieldoption=3 # In case of the inputvalue 3(SRCPORT), set value 3 to a variable named filedoption and break the while loop
-         break ;
+         break ;;
       4) fieldoption=4 # In case of the inputvalue 4(DESTIP), set value 4 to a variable named filedoption and break the while loop
          break ;;
       5) fieldoption=5 # In case of the inputvalue 5(DESTPORT), set value 5 to a variable named filedoption and break the while loop
@@ -42,7 +42,7 @@ checkinputfield(){
         break ;; 
       7) fieldoption=7 # In case of the inputvalue 7(BYTES), set value 7 to a variable named filedoption and break the while loop
         break ;;
-      *) echo -e "![Error] Choose option among above selection\n";; # In case of the others, print error message and resume the loop
+      *) echo -e "![Error] Choose field among above selection\n";; # In case of the others, print error message and resume the loop
     esac           
   done 
   return $fieldoption # Return the variable filedoption to main 
@@ -356,7 +356,7 @@ while true; do
         fi
       done 
 
-      $progressmsg
+      $progressmsg #Progress Bar
 
       #Outputfile formatting and calculation in case of packet and bytes field
       outputfileformatting $outputfilename $calculationyn
@@ -376,8 +376,8 @@ while true; do
       singlefileyn="N"
       
       echo ""
-      echo ""
-      $progressmsg
+      echo "" 
+      $progressmsg #Progress Bar
       
       #Begin for loop for all log files in serv_acc directory
       for inputfile in ./serv_acc/*
@@ -420,7 +420,7 @@ while true; do
     # 1.Field, 2.Inputfile, 3.Keyword, 4.Rangeoption, 5.TemporamFile, 6.AdvancedYN, 7.Outputfile, 8.SearchOrder, 9.Single/All File
     echo ""
     echo ""
-    $progressmsg #Progress Message
+    $progressmsg #Progress Bar
     searchlogfile $fieldoption $paramInputfile $keyword $rangeoption $tmpfilename $advanceyn $outputfilename $searchorder $singlefileyn
 
     #Outputfile formatting and calculation in case of packet and bytes field
